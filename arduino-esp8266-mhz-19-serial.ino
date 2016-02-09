@@ -59,8 +59,8 @@ void setup() {
 
   //set google DNS
   IPAddress googleDNS(8, 8, 8, 8);
-  WiFi.config(WiFi.localIP(),WiFi.gatewayIP(),WiFi.subnetMask(),googleDNS);
-  
+  WiFi.config(WiFi.localIP(), WiFi.gatewayIP(), WiFi.subnetMask(), googleDNS);
+
   // you're connected now, so print out the data:
   Serial.print("You're connected to the network");
   printCurrentNet();
@@ -82,7 +82,7 @@ void setup() {
   lcd.noBacklight();
 }
 
-int ReadCO2()
+int readCO2()
 {
 
   byte cmd[9] = {0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79};
@@ -96,6 +96,49 @@ int ReadCO2()
   int ppm = (256 * responseHigh) + responseLow;
   return ppm;
 }
+
+bool sendData(String data)
+{
+  Serial.println("Starting connection to server...");
+  bool res = false;
+  if (client.connect("co2.jehy.ru", 80))
+  {
+    Serial.println("connected to server");
+    // Make a HTTP request:
+    /*client.println("GET /send.php?data={\"id\":1,\"temp\":" + String(t) + ",\"humidity\":" + String(h) + ",\"ppm\":" + String((int)ppm) +
+                   ",\"mac\":\"" + String(macStr) + "\",\"FreeRAM\":\"" + String(mem) + "\",\"SSID\":\"" + WiFi.SSID() + "\"} HTTP/1.1");
+    */
+    client.println("POST /send.php HTTP/1.1");
+    client.println("Host: co2.jehy.ru");
+    client.println("Connection: close");
+    client.println("User-Agent: Arduino/1.0");
+    client.println("Content-Type: application/x-www-form-urlencoded;");
+
+    client.print("Content-Length: ");
+    client.println(data.length());
+    client.println();
+    client.println(data);
+
+    if (client.available())
+    {
+      res = true;
+      Serial.println("Server reply:");
+      Serial.println("");
+      while (client.available()) {
+        char c = client.read();
+        Serial.print(c);
+      }
+    }
+    client.stop();
+    return res;
+  }
+  else
+  {
+    Serial.println("Failed to connect to server");
+    return false;
+  }
+}
+
 void loop()
 {
 
@@ -108,7 +151,7 @@ void loop()
   //server.handleClient();
   Serial.println("loop started");
   Serial.println("reading data");
-  int ppm = ReadCO2();
+  int ppm = readCO2();
 
   Serial.println("PPM = " + String(ppm));
 
@@ -129,7 +172,7 @@ void loop()
   Serial.print(", Temp = ");
   Serial.println(t, 1);
 
-  if (t == 0 || h == 0 || t < 5 || t>80 || h>100)
+  if (t == 0 || h == 0 || t < 5 || t > 80 || h > 100)
   {
     Serial.println("temperature\\humidity not valid, skipping loop ");
     return;
@@ -149,7 +192,7 @@ void loop()
     lcd.noBacklight();
 
   lcd.setCursor(0, 1);
-  lcd.print("T=" + String(t)+(char)223);
+  lcd.print("T=" + String(t) + (char)223);
   lcd.setCursor(8, 1);
   lcd.print("WiFi *  ");
 
@@ -171,48 +214,14 @@ void loop()
   root.printTo(data);
   data = "data=" + data;
 
-  sentOk = false;
   wifiCheckReconnect(ssid, pass);
   Serial.println("Current net:");
   printCurrentNet();
-  Serial.println("Starting connection to server...");
-  if (client.connect("co2.jehy.ru", 80))
-  {
-    Serial.println("connected to server");
-    // Make a HTTP request:
-    /*client.println("GET /send.php?data={\"id\":1,\"temp\":" + String(t) + ",\"humidity\":" + String(h) + ",\"ppm\":" + String((int)ppm) +
-                   ",\"mac\":\"" + String(macStr) + "\",\"FreeRAM\":\"" + String(mem) + "\",\"SSID\":\"" + WiFi.SSID() + "\"} HTTP/1.1");
-    */
-    client.println("POST /send.php HTTP/1.1");
-    client.println("Host: co2.jehy.ru");
-    client.println("Connection: close");
-    client.println("User-Agent: Arduino/1.0");
-    client.println("Content-Type: application/x-www-form-urlencoded;");
 
-    client.print("Content-Length: ");
-    client.println(data.length());
-    client.println();
-    client.println(data);
+  sentOk = sendData(data);
+  Serial.println("Request sent");
 
-    if (client.available())
-    {
-      sentOk = true;
-      Serial.println("Server reply:");
-      Serial.println("");
-      while (client.available()) {
-        char c = client.read();
-        Serial.print(c);
-      }
-    }
 
-    client.stop();
-    Serial.println("Request sent");
-  }
-  else
-  {
-    Serial.println("Failed to connect to server");
-  }
-  
   lcd.setCursor(8, 1);
   if (sentOk)
     lcd.print("WiFi ok!");
