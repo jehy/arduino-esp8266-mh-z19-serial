@@ -229,5 +229,4 @@ void loop()
     lcd.print("WiFi err");
   Serial.println("loop finished");
   Serial.println("");
-  delay(2000);
 }
