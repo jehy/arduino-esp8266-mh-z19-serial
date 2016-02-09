@@ -5,18 +5,21 @@
 #include <ESP8266WebServer.h>
 #include <Wire.h>
 #include <ArduinoJson.h>
+#include <LiquidCrystal_I2C.h>
 #include "wifi-utils.h"
 #include "wifi-creds.h"
 
 #define INTERVAL 5000
-#define DHT_PIN D4
+#define DHT_PIN D5
 #define DHT_VERSION DHT11
 #define MH_Z19_RX D7
 #define MH_Z19_TX D6
 
 char macStr[20];
 long previousMillis = 0;
+bool sentOk = false;
 
+LiquidCrystal_I2C lcd(0x3F, 16, 2); // display address and size
 DHT dht(DHT_PIN, DHT_VERSION);//define temperature and humidity sensor
 
 
@@ -30,6 +33,11 @@ void setup() {
   mySerial.begin(9600); //Init sensor MH-Z19(14)
   dht.begin();
 
+  lcd.begin();
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("Initializing...");
+
   if (WiFi.status() == WL_NO_SHIELD) {
     Serial.println("WiFi shield not present");
     // don't continue:
@@ -40,6 +48,8 @@ void setup() {
 
   // attempt to connect to Wifi network:
   while ( status != WL_CONNECTED) {
+    lcd.setCursor(0, 0);
+    lcd.print("Connecting...");
     Serial.print("Attempting to connect to WPA SSID: ");
     Serial.println(ssid);
     // Connect to WPA/WPA2 network:
@@ -58,9 +68,13 @@ void setup() {
   sprintf(macStr, "%02x:%02x:%02x:%02x:%02x:%02x", mac[5], mac[4], mac[3], mac[2], mac[1], mac[0]);
 
   Serial.println("Waiting for sensors to init");
+  lcd.setCursor(0, 0);
+  lcd.print("Heating...");
   delay(10000);
   Serial.println("Setup finished");
   Serial.println("");
+  lcd.setCursor(0, 0);
+  lcd.print("Starting...");
 }
 
 int ReadCO2()
@@ -101,9 +115,9 @@ void loop()
   int mem = ESP.getFreeHeap();
   Serial.println("Free RAM: " + String(mem));
 
-  float h = dht.readHumidity();
+  int h = dht.readHumidity();
 
-  float t = dht.readTemperature();
+  int t = dht.readTemperature();
 
   Serial.print("Humidity = ");
   Serial.print(h, 1);
@@ -115,10 +129,25 @@ void loop()
     Serial.println("temperature\\humidity not valid, skipping loop ");
     return;
   }
-  wifiCheckReconnect(ssid, pass);
-  Serial.println("Current net:");
-  printCurrentNet();
-  Serial.println("Starting connection to server...");
+
+  lcd.setCursor(0, 0);
+  lcd.print("H=" + String(h) + "%   ");
+  //lcd.setCursor(5, 0);
+  //lcd.print(h, 1);
+
+
+  lcd.setCursor(8, 0);
+  lcd.print("PPM=" + String(ppm) + "  ");
+
+
+  lcd.setCursor(0, 1);
+  lcd.print("T=" + String(t));
+  lcd.setCursor(8, 1);
+  if (sentOk)
+    lcd.print("WiFi ok!");
+  else
+    lcd.print("WiFi err");
+
   // if you get a connection, report back via serial:
   wdt_reset();
   StaticJsonBuffer<200> jsonBuffer;
@@ -136,7 +165,13 @@ void loop()
   String data;
   root.printTo(data);
   data = "data=" + data;
-  if (client.connect("co2.jehy.ru", 80))
+
+  sentOk = false;
+  wifiCheckReconnect(ssid, pass);
+  Serial.println("Current net:");
+  printCurrentNet();
+  Serial.println("Starting connection to server...");
+  if (client.connect("104.197.187.99", 80))
   {
     Serial.println("connected to server");
     // Make a HTTP request:
@@ -156,6 +191,7 @@ void loop()
 
     if (client.available())
     {
+      sentOk = true;
       Serial.println("Server reply:");
       Serial.println("");
       while (client.available()) {
