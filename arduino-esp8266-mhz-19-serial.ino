@@ -150,31 +150,31 @@ void loop()
   //dns.processNextRequest();
   //server.handleClient();
   Serial.println("loop started");
-  Serial.println("reading data");
+  Serial.println("reading data:");
   int ppm = readCO2();
 
-  Serial.println("PPM = " + String(ppm));
+  Serial.println("  PPM = " + String(ppm));
 
   if (ppm < 100 || ppm > 6000)
   {
-    Serial.println("PPM not valid, skipping loop ");
+    Serial.println("  PPM not valid, skipping loop ");
     return;
   }
   int mem = ESP.getFreeHeap();
-  Serial.println("Free RAM: " + String(mem));
+  Serial.println("  Free RAM: " + String(mem));
 
   int h = dht.readHumidity();
 
   int t = dht.readTemperature();
 
-  Serial.print("Humidity = ");
+  Serial.print("  Humidity = ");
   Serial.print(h, 1);
   Serial.print(", Temp = ");
   Serial.println(t, 1);
 
   if (t == 0 || h == 0 || t < 5 || t > 80 || h > 100)
   {
-    Serial.println("temperature\\humidity not valid, skipping loop ");
+    Serial.println("  temperature\\humidity not valid, skipping loop ");
     return;
   }
 

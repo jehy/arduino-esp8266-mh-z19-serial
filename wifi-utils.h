@@ -14,7 +14,7 @@ void wifiCheckReconnect(char* ssid, char* pass)
       continue;
     previousMillis = currentMillis;   
     //dns.processNextRequest();  
-    Serial.print("Wifi not connected. Attempting to connect to WPA SSID: ");
+    Serial.print("Wifi not connected. Attempting to connect to SSID ");
     Serial.println(ssid);
     // Connect to WPA/WPA2 network:    
     status = WiFi.begin(ssid, pass);
@@ -24,13 +24,13 @@ void wifiCheckReconnect(char* ssid, char* pass)
 void printWifiData() {
   // print your WiFi shield's IP address:
   IPAddress ip = WiFi.localIP();
-    Serial.print("IP Address: ");
+  Serial.print("  IP Address: ");
   Serial.println(ip);
  
   // print your MAC address:
   byte mac[6];  
   WiFi.macAddress(mac);
-  Serial.print("MAC address: ");
+  Serial.print("  MAC address: ");
   Serial.print(mac[5],HEX);
   Serial.print(":");
   Serial.print(mac[4],HEX);
@@ -46,7 +46,7 @@ void printWifiData() {
 
 void printCurrentNet() {
   // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
+  Serial.print("  SSID: ");
   Serial.println(WiFi.SSID());
 
   // print the MAC address of the router you're attached to:
@@ -67,7 +67,7 @@ void printCurrentNet() {
 
   // print the received signal strength:
   long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
+  Serial.print("  signal strength (RSSI):");
   Serial.println(rssi);
 
   // print the encryption type:
