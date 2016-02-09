@@ -57,6 +57,10 @@ void setup() {
     delay(10000);
   }
 
+  //set google DNS
+  IPAddress googleDNS(8, 8, 8, 8);
+  WiFi.config(WiFi.localIP(),WiFi.gatewayIP(),WiFi.subnetMask(),googleDNS);
+  
   // you're connected now, so print out the data:
   Serial.print("You're connected to the network");
   printCurrentNet();
@@ -75,6 +79,7 @@ void setup() {
   Serial.println("");
   lcd.setCursor(0, 0);
   lcd.print("Starting...");
+  lcd.noBacklight();
 }
 
 int ReadCO2()
@@ -107,7 +112,7 @@ void loop()
 
   Serial.println("PPM = " + String(ppm));
 
-  if (ppm < 100 || ppm > 2000)
+  if (ppm < 100 || ppm > 6000)
   {
     Serial.println("PPM not valid, skipping loop ");
     return;
@@ -124,7 +129,7 @@ void loop()
   Serial.print(", Temp = ");
   Serial.println(t, 1);
 
-  if (t == 0 || h == 0 || t < 5)
+  if (t == 0 || h == 0 || t < 5 || t>80 || h>100)
   {
     Serial.println("temperature\\humidity not valid, skipping loop ");
     return;
@@ -138,7 +143,10 @@ void loop()
 
   lcd.setCursor(8, 0);
   lcd.print("PPM=" + String(ppm) + "  ");
-
+  if (ppm >= 1000)
+    lcd.backlight();
+  else
+    lcd.noBacklight();
 
   lcd.setCursor(0, 1);
   lcd.print("T=" + String(t));
@@ -171,7 +179,7 @@ void loop()
   Serial.println("Current net:");
   printCurrentNet();
   Serial.println("Starting connection to server...");
-  if (client.connect("104.197.187.99", 80))
+  if (client.connect("co2.jehy.ru", 80))
   {
     Serial.println("connected to server");
     // Make a HTTP request:
