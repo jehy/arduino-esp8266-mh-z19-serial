@@ -149,12 +149,9 @@ void loop()
     lcd.noBacklight();
 
   lcd.setCursor(0, 1);
-  lcd.print("T=" + String(t));
+  lcd.print("T=" + String(t)+(char)223);
   lcd.setCursor(8, 1);
-  if (sentOk)
-    lcd.print("WiFi ok!");
-  else
-    lcd.print("WiFi err");
+  lcd.print("WiFi *  ");
 
   // if you get a connection, report back via serial:
   wdt_reset();
@@ -215,6 +212,12 @@ void loop()
   {
     Serial.println("Failed to connect to server");
   }
+  
+  lcd.setCursor(8, 1);
+  if (sentOk)
+    lcd.print("WiFi ok!");
+  else
+    lcd.print("WiFi err");
   Serial.println("loop finished");
   Serial.println("");
   delay(2000);
