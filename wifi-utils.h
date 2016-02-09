@@ -26,7 +26,6 @@ void printWifiData() {
   IPAddress ip = WiFi.localIP();
     Serial.print("IP Address: ");
   Serial.println(ip);
-  Serial.println(ip);
  
   // print your MAC address:
   byte mac[6];  
