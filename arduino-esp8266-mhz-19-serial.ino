@@ -1,10 +1,10 @@
 #include <SoftwareSerial.h>
-#include <DHT.h> https://github.com/adafruit/DHT-sensor-library
+#include <DHT.h> // https://github.com/adafruit/DHT-sensor-library
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <Wire.h>
-#include <ArduinoJson.h> https://github.com/bblanchon/ArduinoJson
-#include <LiquidCrystal_I2C.h> //https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
+#include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
+#include <LiquidCrystal_I2C.h> // https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
 #include "WifiUtils.h"
 #include "WiFiCreds.h"
 #include "LcdPrint.h"
