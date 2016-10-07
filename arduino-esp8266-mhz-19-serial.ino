@@ -12,7 +12,7 @@
 
 #define INTERVAL 5000
 #define DHT_PIN D5
-#define DHT_VERSION DHT11
+#define DHT_VERSION DHT22
 #define MH_Z19_RX D7
 #define MH_Z19_TX D6
 #define WIFI_MAX_ATTEMPTS_INIT 3 //set to 0 for unlimited, do not use more then 65535
