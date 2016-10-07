@@ -15,7 +15,7 @@
 #define DHT_VERSION DHT11
 #define MH_Z19_RX D7
 #define MH_Z19_TX D6
-#define WIFI_MAX_ATTEMPTS_INIT 5 //set to 0 for unlimited, do not use more then 65535
+#define WIFI_MAX_ATTEMPTS_INIT 3 //set to 0 for unlimited, do not use more then 65535
 #define WIFI_MAX_ATTEMPTS_SEND 1 //set to 0 for unlimited, do not use more then 65535
 #define MAX_DATA_ERRORS 15 //max of errors, reset after them
 #define USE_GOOGLE_DNS true
