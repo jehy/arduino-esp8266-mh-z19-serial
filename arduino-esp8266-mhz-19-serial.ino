@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
 #include <LiquidCrystal_I2C.h> // https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
-#include "WifiUtils.h"
+#include "WiFiUtils.h"
 #include "WiFiCreds.h"
 #include "LcdPrint.h"
 #include "dataServer.h"
