@@ -39,17 +39,18 @@ int readCO2()
   byte response[9]; // for answer
 
   co2Serial.write(cmd, 9); //request PPM CO2
+
+  // The serial stream can get out of sync. The response starts with 0xff, try to resync.
+  while (co2Serial.available() > 0 && (unsigned char)co2Serial.peek() != 0xFF) {
+    co2Serial.read();
+  }
+
   memset(response, 0, 9);
   co2Serial.readBytes(response, 9);
-  if (response[0] != 0xFF)
-  {
-    Serial.println("Wrong starting byte from co2 sensor!");
-    return -1;
-  }
 
   if (response[1] != 0x86)
   {
-    Serial.println("Wrong command from co2 sensor!");
+    Serial.println("Invalid response from co2 sensor!");
     return -1;
   }
 
