@@ -1,3 +1,14 @@
+
+#define INTERVAL 5000
+#define DHT_PIN D5
+#define DHT_VERSION DHT22
+#define MH_Z19_RX D7
+#define MH_Z19_TX D6
+#define WIFI_MAX_ATTEMPTS_INIT 3 //set to 0 for unlimited, do not use more then 65535
+#define WIFI_MAX_ATTEMPTS_SEND 1 //set to 0 for unlimited, do not use more then 65535
+#define MAX_DATA_ERRORS 15 //max of errors, reset after them
+#define USE_GOOGLE_DNS true
+
 #include <SoftwareSerial.h>
 #include <DHT.h> // https://github.com/adafruit/DHT-sensor-library
 #include <ESP8266WiFi.h>
@@ -10,21 +21,13 @@
 #include "LcdPrint.h"
 #include "dataServer.h"
 
-#define INTERVAL 5000
-#define DHT_PIN D5
-#define DHT_VERSION DHT22
-#define MH_Z19_RX D7
-#define MH_Z19_TX D6
-#define WIFI_MAX_ATTEMPTS_INIT 3 //set to 0 for unlimited, do not use more then 65535
-#define WIFI_MAX_ATTEMPTS_SEND 1 //set to 0 for unlimited, do not use more then 65535
-#define MAX_DATA_ERRORS 15 //max of errors, reset after them
-#define USE_GOOGLE_DNS true
 
 long previousMillis = 0;
 int errorCount = 0;
 WiFiClient client;
 WiFiUtils wifiUtils;
 lcdPrint lcd(0x3F, 16, 2); // display address and size
+
 DHT dht(DHT_PIN, DHT_VERSION);//define temperature and humidity sensor
 SoftwareSerial co2Serial(MH_Z19_RX, MH_Z19_TX); // define MH-Z19
 
@@ -137,10 +140,10 @@ void setup() {
       delay(1000);
   }
 
-
-  lcd.begin();
+  lcd.init();
   lcd.backlight();
   lcd.printLine(1, "Connecting...");
+
   // attempt to connect to Wifi network:
   unsigned int attempt = 0;
   while ( WiFi.status() != WL_CONNECTED) {
@@ -165,14 +168,17 @@ void setup() {
   wifiUtils.printWifiData();
 
   Serial.println("Waiting for sensors to init");
+
   lcd.printLine(1, "Heating...");
   lcd.printLine(2, "");
+
   while (millis() - previousMillis < 10000)
     delay(1000);
   Serial.println("Setup finished");
   Serial.println("");
   lcd.printLine(1, "Heating...");
   lcd.noBacklight();
+
 }
 
 void loop()
@@ -201,8 +207,8 @@ void loop()
   if (ppm < 100 || ppm > 6000)
   {
     Serial.println("PPM not valid");
-    lcd.printParam(2, "PPM err");
     dataError = true;
+    lcd.printParam(2, "PPM err");
     lcd.noBacklight();
   }
   else
@@ -230,18 +236,18 @@ void loop()
     lcd.printParam(3, "T err");
     dataError = true;
   }
-  else
+  else {
     lcd.printParam(3, "T=" + String(t) + (char)223);
-
+  }
   if (h > 100 || h == 0)
   {
     Serial.println("Humidity not valid");
     lcd.printParam(1, "H err");
     dataError = true;
   }
-  else
+  else {
     lcd.printParam(1, "H=" + String(h) + "%");
-
+  }
   if (dataError)
   {
     lcd.printParam(4, "WiFi skp");
