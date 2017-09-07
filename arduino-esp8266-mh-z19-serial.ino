@@ -139,6 +139,7 @@ void setup() {
     while (true)
       delay(1000);
   }
+  WiFi.mode(WIFI_STA);//be only wifi client, not station
 
   lcd.init();
   lcd.backlight();
