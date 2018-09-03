@@ -101,7 +101,7 @@ bool sendData(JsonObject& root)
     client.println(data.length());
     client.println();
     client.println(data);
-
+    delay(400); //see https://github.com/esp8266/Arduino/issues/4342
     if (client.available())
     {
       res = true;//TODO: check if reply is really OK
