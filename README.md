@@ -20,7 +20,7 @@ arduino --install-library "DHT sensor library:1.2.3"
 arduino --install-library "LiquidCrystal I2C:1.1.2"
 arduino --install-boards esp8266:esp8266
 
-cp WiFiCreds.h.sample WiFiCreds.h # EDIT AFTER COP# Y!
+cp WiFiCreds.h.sample WiFiCreds.h # EDIT AFTER COPY!
 cp dataServer.h.sample dataServer.h # EDIT AFTER COPY!
 
 arduino --verify --board esp8266:esp8266:d1:CpuFrequency=80,FlashSize=4M3M arduino-esp8266-mh-z19-serial.ino
