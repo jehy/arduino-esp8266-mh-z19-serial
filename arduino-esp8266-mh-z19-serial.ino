@@ -10,12 +10,12 @@
 #define USE_GOOGLE_DNS true
 
 #include <SoftwareSerial.h>
-#include <DHT.h> // https://github.com/adafruit/DHT-sensor-library
+#include <DHT.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <Wire.h>
-#include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson
-#include <LiquidCrystal_I2C.h> // https://github.com/fdebrabander/Arduino-LiquidCrystal-I2C-library
+#include <ArduinoJson.h>
+#include <LiquidCrystal_I2C.h>
 #include "WiFiUtils.h"
 #include "WiFiCreds.h"
 #include "LcdPrint.h"
