@@ -77,49 +77,45 @@ int readCO2()
 bool sendData(JsonObject& root)
 {
   Serial.println("Starting connection to server...");
-  bool res = false;
-  if (client.connect(DATA_SERVER, 80))
-  {
-    Serial.println("connected to server");
-    // Make a HTTP request:
-    /*client.println("GET /send.php?data={\"id\":1,\"temp\":" + String(t) + ",\"humidity\":" + String(h) + ",\"ppm\":" + String((int)ppm) +
-                   ",\"mac\":\"" + String(macStr) + "\",\"FreeRAM\":\"" + String(mem) + "\",\"SSID\":\"" + WiFi.SSID() + "\"} HTTP/1.1");
-    */
-    client.println("POST " + String(DATA_URL) + " HTTP/1.1");
-    client.println("Host: " + String(DATA_SERVER));
-    client.println("Connection: close");
-    client.println("User-Agent: Arduino/1.0");
-    client.println("Content-Type: application/x-www-form-urlencoded;");
-
-    client.print("Content-Length: ");
-    String data;
-    root.printTo(data);
-
-    //Serial.println("data to send:");
-    //Serial.println(data);
-    data = "data=" + data;
-    client.println(data.length());
-    client.println();
-    client.println(data);
-    delay(400); //see https://github.com/esp8266/Arduino/issues/4342
-    if (client.available())
-    {
-      res = true;//TODO: check if reply is really OK
-      Serial.println("Server reply:");
-      Serial.println("");
-      while (client.available()) {
-        char c = client.read();
-        Serial.print(c);
-      }
-    }
-    client.stop();
-    return res;
-  }
-  else
+  if (!client.connect(DATA_SERVER, 80))
   {
     Serial.println("Failed to connect to server");
     return false;
   }
+  
+  Serial.println("connected to server");
+  // Make a HTTP request:
+  /*client.println("GET /send.php?data={\"id\":1,\"temp\":" + String(t) + ",\"humidity\":" + String(h) + ",\"ppm\":" + String((int)ppm) +
+                 ",\"mac\":\"" + String(macStr) + "\",\"FreeRAM\":\"" + String(mem) + "\",\"SSID\":\"" + WiFi.SSID() + "\"} HTTP/1.1");
+  */
+  client.println("POST " + String(DATA_URL) + " HTTP/1.1");
+  client.println("Host: " + String(DATA_SERVER));
+  client.println("Connection: close");
+  client.println("User-Agent: Arduino/1.0");
+  client.println("Content-Type: application/x-www-form-urlencoded;");
+
+  client.print("Content-Length: ");
+  String data;
+  root.printTo(data);
+
+  //Serial.println("data to send:");
+  //Serial.println(data);
+  data = "data=" + data;
+  client.println(data.length());
+  client.println();
+  client.println(data);
+  while(client.connected() && !client.available())//see https://github.com/esp8266/Arduino/issues/4342
+  {
+    delay(100);
+  }
+  Serial.println("Server reply:");
+  Serial.println("");
+  while (client.available()) {
+    char c = client.read();
+    Serial.print(c);
+  }
+  client.stop();
+  return true;
 }
 
 
