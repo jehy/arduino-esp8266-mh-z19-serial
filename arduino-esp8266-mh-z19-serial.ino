@@ -21,6 +21,9 @@
 #include "LcdPrint.h"
 #include "dataServer.h"
 
+extern "C" {
+#include <user_interface.h>
+}
 
 long previousMillis = 0;
 int errorCount = 0;
@@ -137,6 +140,20 @@ void setup() {
   }
   WiFi.mode(WIFI_STA);//be only wifi client, not station
 
+  Serial.print("Scan start ... ");
+  int n = WiFi.scanNetworks();
+  Serial.print(n);
+  Serial.println(" network(s) found");
+  for (int i = 0; i < n; i++)
+  {
+      Serial.printf("%d: %s, Ch:%d (%ddBm) %s\n", i+1, WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i), WiFi.encryptionType(i) == ENC_TYPE_NONE ? "open" : "");
+  }
+  Serial.println();
+  WiFi.disconnect(1);
+  WiFi.hostname("CO2_Sensor");
+  uint8_t mac[6] {0xb7, 0xa7, 0x53, 0x10, 0xae, 0xec};
+  wifi_set_macaddr(STATION_IF, mac);
+  
   lcd.init();
   lcd.backlight();
   lcd.printLine(1, "Connecting...");
@@ -160,7 +177,26 @@ void setup() {
   if (USE_GOOGLE_DNS)
     wifiUtils.setGoogleDNS();
   // you're connected now, so print out the data:
-  Serial.println("Connected to network");
+  //Serial.println("Connected to network");
+  Serial.printf("Connection status: %d\n", WiFi.status());
+  
+    if (WiFi.status() == WL_IDLE_STATUS) {
+      Serial.println("WL_IDLE_STATUS");
+    } else if (WiFi.status() == WL_NO_SSID_AVAIL) {
+      Serial.println("WL_NO_SSID_AVAIL");
+    } else if (WiFi.status() == WL_SCAN_COMPLETED) {
+      Serial.println("WL_SCAN_COMPLETED");
+    } else if (WiFi.status() == WL_CONNECTED) {
+      Serial.println("WL_CONNECTED");
+      Serial.print ( "IP address: " );
+      Serial.println ( WiFi.localIP() );
+    } else if (WiFi.status() == WL_CONNECT_FAILED) {
+      Serial.println("WL_CONNECT_FAILED");
+    } else if (WiFi.status() == WL_CONNECTION_LOST) {
+      Serial.println("WL_CONNECTION_LOST");
+    } else if (WiFi.status() == WL_DISCONNECTED) {
+      Serial.println("WL_DISCONNECTED");
+    }
   wifiUtils.printCurrentNet();
   wifiUtils.printWifiData();
 
