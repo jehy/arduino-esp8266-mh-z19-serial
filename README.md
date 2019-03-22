@@ -4,6 +4,8 @@
 
 CO2, humidity and temperature sensor on ESP8266 with mh-z19 co2 sensor and dht-22 temperature and humidity sensor.
 
+![sensor sample](https://github.com/jehy/arduino-esp8266-mh-z19-serial/raw/master/sensor.jpg)
+
 You can use project [https://github.com/jehy/co2-online-display](https://github.com/jehy/co2-online-display) as backend to this program.
 See full description on [https://geektimes.ru/post/270958/](https://geektimes.ru/post/270958/) (you can use Google translate from Russian).
 
