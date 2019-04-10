@@ -1,6 +1,7 @@
 # Arduino esp8266 mh-z19 serial
 
 [![Build Status](https://travis-ci.org/jehy/arduino-esp8266-mh-z19-serial.svg?branch=master)](https://travis-ci.org/jehy/arduino-esp8266-mh-z19-serial)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/jehyrus)
 
 CO2, humidity and temperature sensor on ESP8266 with mh-z19 co2 sensor and dht-22 temperature and humidity sensor.
 
