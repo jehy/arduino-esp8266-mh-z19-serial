@@ -1,6 +1,6 @@
 # Arduino esp8266 mh-z19 serial
 
-[![Build Status](https://travis-ci.vom/jehy/arduino-esp8266-mh-z19-serial.svg?branch=master)](https://travis-ci.com/jehy/arduino-esp8266-mh-z19-serial)
+[![Build Status](https://travis-ci.com/jehy/arduino-esp8266-mh-z19-serial.svg?branch=master)](https://travis-ci.com/jehy/arduino-esp8266-mh-z19-serial)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/jehyrus)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
@@ -21,7 +21,7 @@ All required libraries can be installed with Arduino IDE:
 arduino --pref "boardsmanager.additional.urls=http://arduino.esp8266.com/stable/package_esp8266com_index.json" --save-prefs
 arduino --install-library "ArduinoJson:6.14.1"
 arduino --install-library "DHT sensor library:1.3.8"
-arduino --install-library "LiquidCrystal I2C:1.1.4"
+arduino --install-library "LiquidCrystal I2C:1.1.2"
 arduino --install-boards esp8266:esp8266
 
 cp WiFiCreds.sample.h WiFiCreds.h # EDIT AFTER COPY!
@@ -37,7 +37,7 @@ arduino --verify --board esp8266:esp8266:d1:CpuFrequency=80,FlashSize=4M3M ardui
 2. Copy file `WiFiCreds.sample.h` to `WiFiCreds.h` and specify there your WiFi cridentials;
 3. Install [DHT sensor library](https://github.com/adafruit/DHT-sensor-library) version 1.3.8; 
 4. Install [ArduinoJson library](https://arduinojson.org/) v 6.14.1;
-5. Install [LiquidCrystal_I2C library](https://github.com/marcoschwartz/LiquidCrystal_I2C) v 1.1.4;
+5. Install [LiquidCrystal_I2C library](https://github.com/marcoschwartz/LiquidCrystal_I2C) v 1.1.2;
 7. Compile and upload your sketch;
 8. Enjoy!
 
