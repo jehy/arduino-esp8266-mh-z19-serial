@@ -82,7 +82,7 @@ int readCO2()
   }
 }
 
-bool sendData(JsonObject &root)
+bool sendData(DynamicJsonDocument root)
 {
   Serial.println("Starting connection to server...");
   if (!client.connect(DATA_SERVER, 80))
@@ -104,7 +104,7 @@ bool sendData(JsonObject &root)
 
   client.print("Content-Length: ");
   String data;
-  root.printTo(data);
+  serializeJson(root, data);
 
   //Serial.println("data to send:");
   //Serial.println(data);
@@ -310,8 +310,7 @@ void loop()
   }
   errorCount = 0;
 
-  StaticJsonBuffer<200> jsonBuffer;
-  JsonObject &root = jsonBuffer.createObject();
+  DynamicJsonDocument root(200);
   root["id"] = DATA_SENSOR_ID;
   root["temp"] = t;
   root["humidity"] = h;
