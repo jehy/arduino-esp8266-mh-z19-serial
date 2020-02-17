@@ -1,6 +1,6 @@
 # Arduino esp8266 mh-z19 serial
 
-[![Build Status](https://travis-ci.org/jehy/arduino-esp8266-mh-z19-serial.svg?branch=master)](https://travis-ci.org/jehy/arduino-esp8266-mh-z19-serial)
+[![Build Status](https://travis-ci.vom/jehy/arduino-esp8266-mh-z19-serial.svg?branch=master)](https://travis-ci.com/jehy/arduino-esp8266-mh-z19-serial)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/jehyrus)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
@@ -24,8 +24,8 @@ arduino --install-library "DHT sensor library:1.2.3"
 arduino --install-library "LiquidCrystal I2C:1.1.2"
 arduino --install-boards esp8266:esp8266
 
-cp WiFiCreds.h.sample WiFiCreds.h # EDIT AFTER COPY!
-cp dataServer.h.sample dataServer.h # EDIT AFTER COPY!
+cp WiFiCreds.sample.h WiFiCreds.h # EDIT AFTER COPY!
+cp dataServer.sample.h dataServer.h # EDIT AFTER COPY!
 
 arduino --verify --board esp8266:esp8266:d1:CpuFrequency=80,FlashSize=4M3M arduino-esp8266-mh-z19-serial.ino
 
@@ -33,8 +33,8 @@ arduino --verify --board esp8266:esp8266:d1:CpuFrequency=80,FlashSize=4M3M ardui
 
 ## Manualy:
 
-1. Copy file `dataServer.h.sample` to `dataServer.h` and specify there your server address;
-2. Copy file `WiFiCreds.h.sample` to `WiFiCreds.h` and specify there your WiFi cridentials;
+1. Copy file `dataServer.sample.h` to `dataServer.h` and specify there your server address;
+2. Copy file `WiFiCreds.sample.h` to `WiFiCreds.h` and specify there your WiFi cridentials;
 3. Install [DHT sensor library](https://github.com/adafruit/DHT-sensor-library) version 1.2.3; 
 4. Install [ArduinoJson library](https://arduinojson.org/) v 5.13.3;
 5. Install [LiquidCrystal_I2C library](https://github.com/marcoschwartz/LiquidCrystal_I2C) v 1.1.2;

@@ -6,7 +6,7 @@
 #define MH_Z19_TX D6
 #define WIFI_MAX_ATTEMPTS_INIT 3 //set to 0 for unlimited, do not use more then 65535
 #define WIFI_MAX_ATTEMPTS_SEND 1 //set to 0 for unlimited, do not use more then 65535
-#define MAX_DATA_ERRORS 15 //max of errors, reset after them
+#define MAX_DATA_ERRORS 15       //max of errors, reset after them
 #define USE_GOOGLE_DNS true
 
 #include <SoftwareSerial.h>
@@ -21,7 +21,8 @@
 #include "LcdPrint.h"
 #include "dataServer.h"
 
-extern "C" {
+extern "C"
+{
 #include <user_interface.h>
 }
 
@@ -31,11 +32,10 @@ WiFiClient client;
 WiFiUtils wifiUtils;
 lcdPrint lcd(0x3F, 16, 2); // display address and size
 
-DHT dht(DHT_PIN, DHT_VERSION);//define temperature and humidity sensor
+DHT dht(DHT_PIN, DHT_VERSION);                  //define temperature and humidity sensor
 SoftwareSerial co2Serial(MH_Z19_RX, MH_Z19_TX); // define MH-Z19
 
-void(* resetFunc) (void) = 0; //declare reset function @ address 0
-
+void (*resetFunc)(void) = 0; //declare reset function @ address 0
 
 int readCO2()
 {
@@ -47,7 +47,8 @@ int readCO2()
   co2Serial.write(cmd, 9); //request PPM CO2
 
   // The serial stream can get out of sync. The response starts with 0xff, try to resync.
-  while (co2Serial.available() > 0 && (unsigned char)co2Serial.peek() != 0xFF) {
+  while (co2Serial.available() > 0 && (unsigned char)co2Serial.peek() != 0xFF)
+  {
     co2Serial.read();
   }
 
@@ -61,23 +62,27 @@ int readCO2()
   }
 
   byte crc = 0;
-  for (int i = 1; i < 8; i++) {
+  for (int i = 1; i < 8; i++)
+  {
     crc += response[i];
   }
   crc = 255 - crc + 1;
 
-  if (response[8] == crc) {
-    int responseHigh = (int) response[2];
-    int responseLow = (int) response[3];
+  if (response[8] == crc)
+  {
+    int responseHigh = (int)response[2];
+    int responseLow = (int)response[3];
     int ppm = (256 * responseHigh) + responseLow;
     return ppm;
-  } else {
+  }
+  else
+  {
     Serial.println("CRC error!");
     return -1;
   }
 }
 
-bool sendData(JsonObject& root)
+bool sendData(JsonObject &root)
 {
   Serial.println("Starting connection to server...");
   if (!client.connect(DATA_SERVER, 80))
@@ -85,7 +90,7 @@ bool sendData(JsonObject& root)
     Serial.println("Failed to connect to server");
     return false;
   }
-  
+
   Serial.println("connected to server");
   // Make a HTTP request:
   /*client.println("GET /send.php?data={\"id\":1,\"temp\":" + String(t) + ",\"humidity\":" + String(h) + ",\"ppm\":" + String((int)ppm) +
@@ -107,13 +112,14 @@ bool sendData(JsonObject& root)
   client.println(data.length());
   client.println();
   client.println(data);
-  while(client.connected() && !client.available())//see https://github.com/esp8266/Arduino/issues/4342
+  while (client.connected() && !client.available()) //see https://github.com/esp8266/Arduino/issues/4342
   {
     delay(100);
   }
   Serial.println("Server reply:");
   Serial.println("");
-  while (client.available()) {
+  while (client.available())
+  {
     char c = client.read();
     Serial.print(c);
   }
@@ -121,9 +127,8 @@ bool sendData(JsonObject& root)
   return true;
 }
 
-
-
-void setup() {
+void setup()
+{
   Serial.begin(115200); // Init console
   Serial.println("Setup started");
 
@@ -131,14 +136,14 @@ void setup() {
   co2Serial.begin(9600); //Init sensor MH-Z19(14)
   dht.begin();
 
-
-  if (WiFi.status() == WL_NO_SHIELD) {
+  if (WiFi.status() == WL_NO_SHIELD)
+  {
     Serial.println("WiFi shield not present");
     // don't continue:
     while (true)
       delay(1000);
   }
-  WiFi.mode(WIFI_STA);//be only wifi client, not station
+  WiFi.mode(WIFI_STA); //be only wifi client, not station
 
   Serial.print("Scan start ... ");
   int n = WiFi.scanNetworks();
@@ -146,21 +151,22 @@ void setup() {
   Serial.println(" network(s) found");
   for (int i = 0; i < n; i++)
   {
-      Serial.printf("%d: %s, Ch:%d (%ddBm) %s\n", i+1, WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i), WiFi.encryptionType(i) == ENC_TYPE_NONE ? "open" : "");
+    Serial.printf("%d: %s, Ch:%d (%ddBm) %s\n", i + 1, WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i), WiFi.encryptionType(i) == ENC_TYPE_NONE ? "open" : "");
   }
   Serial.println();
   WiFi.disconnect(1);
   WiFi.hostname("CO2_Sensor");
-  uint8_t mac[6] {0xb7, 0xa7, 0x53, 0x10, 0xae, 0xec};
+  uint8_t mac[6]{0xb7, 0xa7, 0x53, 0x10, 0xae, 0xec};
   wifi_set_macaddr(STATION_IF, mac);
-  
+
   lcd.init();
   lcd.backlight();
   lcd.printLine(1, "Connecting...");
 
   // attempt to connect to Wifi network:
   unsigned int attempt = 0;
-  while ( WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     if (WIFI_MAX_ATTEMPTS_INIT != 0 && attempt > WIFI_MAX_ATTEMPTS_INIT)
       break;
     if (attempt >= 65535)
@@ -179,24 +185,37 @@ void setup() {
   // you're connected now, so print out the data:
   //Serial.println("Connected to network");
   Serial.printf("Connection status: %d\n", WiFi.status());
-  
-    if (WiFi.status() == WL_IDLE_STATUS) {
-      Serial.println("WL_IDLE_STATUS");
-    } else if (WiFi.status() == WL_NO_SSID_AVAIL) {
-      Serial.println("WL_NO_SSID_AVAIL");
-    } else if (WiFi.status() == WL_SCAN_COMPLETED) {
-      Serial.println("WL_SCAN_COMPLETED");
-    } else if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("WL_CONNECTED");
-      Serial.print ( "IP address: " );
-      Serial.println ( WiFi.localIP() );
-    } else if (WiFi.status() == WL_CONNECT_FAILED) {
-      Serial.println("WL_CONNECT_FAILED");
-    } else if (WiFi.status() == WL_CONNECTION_LOST) {
-      Serial.println("WL_CONNECTION_LOST");
-    } else if (WiFi.status() == WL_DISCONNECTED) {
-      Serial.println("WL_DISCONNECTED");
-    }
+
+  if (WiFi.status() == WL_IDLE_STATUS)
+  {
+    Serial.println("WL_IDLE_STATUS");
+  }
+  else if (WiFi.status() == WL_NO_SSID_AVAIL)
+  {
+    Serial.println("WL_NO_SSID_AVAIL");
+  }
+  else if (WiFi.status() == WL_SCAN_COMPLETED)
+  {
+    Serial.println("WL_SCAN_COMPLETED");
+  }
+  else if (WiFi.status() == WL_CONNECTED)
+  {
+    Serial.println("WL_CONNECTED");
+    Serial.print("IP address: ");
+    Serial.println(WiFi.localIP());
+  }
+  else if (WiFi.status() == WL_CONNECT_FAILED)
+  {
+    Serial.println("WL_CONNECT_FAILED");
+  }
+  else if (WiFi.status() == WL_CONNECTION_LOST)
+  {
+    Serial.println("WL_CONNECTION_LOST");
+  }
+  else if (WiFi.status() == WL_DISCONNECTED)
+  {
+    Serial.println("WL_DISCONNECTED");
+  }
   wifiUtils.printCurrentNet();
   wifiUtils.printWifiData();
 
@@ -211,7 +230,6 @@ void setup() {
   Serial.println("");
   lcd.printLine(1, "Heating...");
   lcd.noBacklight();
-
 }
 
 void loop()
@@ -263,13 +281,14 @@ void loop()
   Serial.print(", Temp = ");
   Serial.println(t, 1);
 
-  if (t < 5 || t > 80 )
+  if (t < 5 || t > 80)
   {
     Serial.println("Temperature not valid");
     lcd.printParam(3, "T err");
     dataError = true;
   }
-  else {
+  else
+  {
     lcd.printParam(3, "T=" + String(t) + (char)223);
   }
   if (h > 100 || h == 0)
@@ -278,7 +297,8 @@ void loop()
     lcd.printParam(1, "H err");
     dataError = true;
   }
-  else {
+  else
+  {
     lcd.printParam(1, "H=" + String(h) + "%");
   }
   if (dataError)
@@ -291,7 +311,7 @@ void loop()
   errorCount = 0;
 
   StaticJsonBuffer<200> jsonBuffer;
-  JsonObject& root = jsonBuffer.createObject();
+  JsonObject &root = jsonBuffer.createObject();
   root["id"] = DATA_SENSOR_ID;
   root["temp"] = t;
   root["humidity"] = h;
@@ -299,7 +319,6 @@ void loop()
   root["mac"] = wifiUtils.macStr();
   root["FreeRAM"] = mem;
   root["SSID"] = WiFi.SSID();
-
 
   wifiUtils.checkReconnect(ssid, pass, WIFI_MAX_ATTEMPTS_SEND);
   if (USE_GOOGLE_DNS)
