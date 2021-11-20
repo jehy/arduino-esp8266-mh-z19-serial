@@ -7,7 +7,7 @@
 #define WIFI_MAX_ATTEMPTS_INIT 3 //set to 0 for unlimited, do not use more then 65535
 #define WIFI_MAX_ATTEMPTS_SEND 1 //set to 0 for unlimited, do not use more then 65535
 #define MAX_DATA_ERRORS 15       //max of errors, reset after them
-#define USE_GOOGLE_DNS true
+#define USE_GOOGLE_DNS false
 
 #include <SoftwareSerial.h>
 #include <DHT.h>
@@ -20,6 +20,7 @@
 #include "WiFiCreds.h"
 #include "LcdPrint.h"
 #include "dataServer.h"
+#include "phrases.h"
 
 extern "C"
 {
@@ -129,6 +130,7 @@ bool sendData(DynamicJsonDocument root)
 
 void setup()
 {
+  unsigned long startTime = millis();
   Serial.begin(115200); // Init console
   Serial.println("Setup started");
 
@@ -149,20 +151,24 @@ void setup()
   int n = WiFi.scanNetworks();
   Serial.print(n);
   Serial.println(" network(s) found");
+  int randFromWifi = 0;
   for (int i = 0; i < n; i++)
   {
     Serial.printf("%d: %s, Ch:%d (%ddBm) %s\n", i + 1, WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i), WiFi.encryptionType(i) == ENC_TYPE_NONE ? "open" : "");
+    randFromWifi += WiFi.RSSI(i);
   }
   Serial.println();
   WiFi.disconnect(1);
   WiFi.hostname("CO2_Sensor");
-  uint8_t mac[6]{0xb7, 0xa7, 0x53, 0x10, 0xae, 0xec};
+  uint8_t mac[6] {0xb7, 0xa7, 0x53, 0x10, 0xae, 0xec};
   wifi_set_macaddr(STATION_IF, mac);
 
   lcd.init();
   lcd.backlight();
-  lcd.printLine(1, "Connecting...");
-
+  unsigned long endTime = millis();
+  randomSeed(endTime - startTime + randFromWifi);
+  showPhrase(lcd);
+  // lcd.printLine(1, "Connecting...");
   // attempt to connect to Wifi network:
   unsigned int attempt = 0;
   while (WiFi.status() != WL_CONNECTED)
@@ -172,7 +178,7 @@ void setup()
     if (attempt >= 65535)
       attempt = 0;
     attempt++;
-    lcd.printLine(2, "Attempt " + String(attempt));
+    // lcd.printLine(2, "Attempt " + String(attempt));
     Serial.print("Attempting to connect to WPA SSID: ");
     Serial.println(ssid);
     // Connect to WPA/WPA2 network:
@@ -234,7 +240,6 @@ void setup()
 
 void loop()
 {
-
   unsigned long currentMillis = millis();
   if (currentMillis - previousMillis < INTERVAL)
     return;
