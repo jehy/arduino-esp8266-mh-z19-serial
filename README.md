@@ -6,6 +6,8 @@
 
 CO2, humidity and temperature sensor on ESP8266 with mh-z19 co2 sensor and dht-22 temperature and humidity sensor.
 
+You can either use custom backed server to receive data in JSON or build in MQQT client to publish data to MQQT server.
+
 ![sensor sample](https://github.com/jehy/arduino-esp8266-mh-z19-serial/raw/master/sensor.jpg)
 
 You can use project [https://github.com/jehy/co2-online-display](https://github.com/jehy/co2-online-display) as backend to this program.
@@ -23,10 +25,12 @@ arduino --install-library "ArduinoJson:6.14.1"
 arduino --install-library "Adafruit Unified Sensor:1.1.2"
 arduino --install-library "DHT sensor library:1.3.8"
 arduino --install-library "LiquidCrystal I2C:1.1.2"
+arduino --install-library "PubSubClient:2.8.0"
 arduino --install-boards esp8266:esp8266
 
 cp WiFiCreds.sample.h WiFiCreds.h # EDIT AFTER COPY!
 cp dataServer.sample.h dataServer.h # EDIT AFTER COPY!
+cp mqtt.sample.h mqtt.h # EDIT AFTER COPY!
 
 arduino --verify --board esp8266:esp8266:d1:CpuFrequency=80,FlashSize=4M3M arduino-esp8266-mh-z19-serial.ino
 

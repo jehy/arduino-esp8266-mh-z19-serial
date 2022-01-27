@@ -18,11 +18,13 @@ install:
 - arduino --install-library "Adafruit Unified Sensor:1.1.2"
 - arduino --install-library "DHT sensor library:1.3.8"
 - arduino --install-library "LiquidCrystal I2C:1.1.2"
+- arduino --install-library "PubSubClient:2.8.0"
 - arduino --install-boards esp8266:esp8266
 - arduino --board esp8266:esp8266:generic --save-prefs
 - arduino --pref "compiler.warning_level=all" --save-prefs
 - cp WiFiCreds.sample.h WiFiCreds.h
 - cp dataServer.sample.h dataServer.h
+- cp mqtt.sample.h mqtt.h
 script:
 - "echo $PWD"
 - "echo $HOME"
