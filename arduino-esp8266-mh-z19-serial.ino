@@ -7,7 +7,7 @@
 #define WIFI_MAX_ATTEMPTS_INIT 3 //set to 0 for unlimited, do not use more then 65535
 #define WIFI_MAX_ATTEMPTS_SEND 1 //set to 0 for unlimited, do not use more then 65535
 #define MAX_DATA_ERRORS 15       //max of errors, reset after them
-#define USE_GOOGLE_DNS true
+#define USE_GOOGLE_DNS false
 
 #include <SoftwareSerial.h>
 #include <DHT.h>
@@ -16,10 +16,12 @@
 #include <Wire.h>
 #include <ArduinoJson.h>
 #include <LiquidCrystal_I2C.h>
+#include <PubSubClient.h>
 #include "WiFiUtils.h"
 #include "WiFiCreds.h"
 #include "LcdPrint.h"
 #include "dataServer.h"
+#include "mqtt.h"
 
 extern "C"
 {
@@ -29,6 +31,7 @@ extern "C"
 long previousMillis = 0;
 int errorCount = 0;
 WiFiClient client;
+PubSubClient mqttClient(client);
 WiFiUtils wifiUtils;
 lcdPrint lcd(0x3F, 16, 2); // display address and size
 
@@ -156,7 +159,7 @@ void setup()
   Serial.println();
   WiFi.disconnect(1);
   WiFi.hostname("CO2_Sensor");
-  uint8_t mac[6]{0xb7, 0xa7, 0x53, 0x10, 0xae, 0xec};
+  uint8_t mac[6] {0xb7, 0xa7, 0x53, 0x10, 0xae, 0xec};
   wifi_set_macaddr(STATION_IF, mac);
 
   lcd.init();
@@ -230,6 +233,10 @@ void setup()
   Serial.println("");
   lcd.printLine(1, "Heating...");
   lcd.noBacklight();
+
+  if (MQTT_ENABLED) {
+    mqttClient.setServer(mqtt_server, mqtt_port);
+  }
 }
 
 void loop()
@@ -310,23 +317,59 @@ void loop()
   }
   errorCount = 0;
 
-  DynamicJsonDocument root(200);
-  root["id"] = DATA_SENSOR_ID;
-  root["temp"] = t;
-  root["humidity"] = h;
-  root["ppm"] = ppm;
-  root["mac"] = wifiUtils.macStr();
-  root["FreeRAM"] = mem;
-  root["SSID"] = WiFi.SSID();
-
   wifiUtils.checkReconnect(ssid, pass, WIFI_MAX_ATTEMPTS_SEND);
   if (USE_GOOGLE_DNS)
     wifiUtils.setGoogleDNS();
   wifiUtils.printCurrentNet();
 
   lcd.printParam(4, "WiFi *");
-  bool sentOk = sendData(root);
-  Serial.println("Request sent");
+  bool sentOk = false;
+
+  if (SERVER_ENABLED)
+  {
+    DynamicJsonDocument root(200);
+    root["id"] = DATA_SENSOR_ID;
+    root["temp"] = t;
+    root["humidity"] = h;
+    root["ppm"] = ppm;
+    root["mac"] = wifiUtils.macStr();
+    root["FreeRAM"] = mem;
+    root["SSID"] = WiFi.SSID();
+    sentOk = sendData(root);
+    if (sentOk) {
+      Serial.println("Server request sent");
+    }
+  }
+  if (MQTT_ENABLED) {
+    bool connected = true;
+    if (!mqttClient.connected()) {
+      connected = false;
+      if (mqttClient.connect("ESP8266Client")) {
+        Serial.println("MQQT reconnected");
+        connected = true;
+      } else {
+        connected = false;
+        Serial.print("MQTT failed, rc=");
+        Serial.print(mqttClient.state());
+      }
+    }
+    if (connected) {
+      char dataString[5];       // number of digits + 1 for null terminator
+      itoa(t, dataString, 10);  // int value, pointer to string, base number
+      mqttClient.publish(temperature_topic, dataString, true);
+      itoa(h, dataString, 10);  // int value, pointer to string, base number
+      mqttClient.publish(humidity_topic, dataString, true);
+      itoa(ppm, dataString, 10);  // int value, pointer to string, base number
+      mqttClient.publish(co2_topic, dataString, true);
+      itoa(mem, dataString, 10);  // int value, pointer to string, base number
+      mqttClient.publish(ram_topic, dataString, true);
+      Serial.println("MQQT request sent");
+      sentOk = true;
+    }
+    else {
+      Serial.println("MQQT not connected");
+    }
+  }
   if (sentOk)
     lcd.printParam(4, "WiFi ok!");
   else
