@@ -1,15 +1,10 @@
 
-#define INTERVAL 5000
-#define DHT_PIN D5
-#define DHT_VERSION DHT22
-#define MH_Z19_RX D7
-#define MH_Z19_TX D6
-#define WIFI_MAX_ATTEMPTS_INIT 3 //set to 0 for unlimited, do not use more then 65535
-#define WIFI_MAX_ATTEMPTS_SEND 1 //set to 0 for unlimited, do not use more then 65535
-#define MAX_DATA_ERRORS 15       //max of errors, reset after them
-#define USE_GOOGLE_DNS false
 
-#include <SoftwareSerial.h>
+extern "C"
+{
+#include <user_interface.h>
+}
+
 #include <DHT.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
@@ -17,73 +12,22 @@
 #include <ArduinoJson.h>
 #include <LiquidCrystal_I2C.h>
 #include <PubSubClient.h>
-#include "WiFiUtils.h"
-#include "WiFiCreds.h"
+#include "settings.h"
 #include "LcdPrint.h"
-#include "dataServer.h"
-#include "mqtt.h"
-
-extern "C"
-{
-#include <user_interface.h>
-}
+#include "WiFiUtils.h"
+#include "MHZ19.h"
 
 long previousMillis = 0;
+long previousMillisSend = 0;
 int errorCount = 0;
 WiFiClient client;
 PubSubClient mqttClient(client);
+MHZ19 co2Sensor(MH_Z19_RX, MH_Z19_TX);
 WiFiUtils wifiUtils;
 lcdPrint lcd(0x3F, 16, 2); // display address and size
-
 DHT dht(DHT_PIN, DHT_VERSION);                  //define temperature and humidity sensor
-SoftwareSerial co2Serial(MH_Z19_RX, MH_Z19_TX); // define MH-Z19
 
 void (*resetFunc)(void) = 0; //declare reset function @ address 0
-
-int readCO2()
-{
-
-  byte cmd[9] = {0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79};
-  // command to ask for data
-  byte response[9]; // for answer
-
-  co2Serial.write(cmd, 9); //request PPM CO2
-
-  // The serial stream can get out of sync. The response starts with 0xff, try to resync.
-  while (co2Serial.available() > 0 && (unsigned char)co2Serial.peek() != 0xFF)
-  {
-    co2Serial.read();
-  }
-
-  memset(response, 0, 9);
-  co2Serial.readBytes(response, 9);
-
-  if (response[1] != 0x86)
-  {
-    Serial.println("Invalid response from co2 sensor!");
-    return -1;
-  }
-
-  byte crc = 0;
-  for (int i = 1; i < 8; i++)
-  {
-    crc += response[i];
-  }
-  crc = 255 - crc + 1;
-
-  if (response[8] == crc)
-  {
-    int responseHigh = (int)response[2];
-    int responseLow = (int)response[3];
-    int ppm = (256 * responseHigh) + responseLow;
-    return ppm;
-  }
-  else
-  {
-    Serial.println("CRC error!");
-    return -1;
-  }
-}
 
 bool sendData(DynamicJsonDocument root)
 {
@@ -136,7 +80,7 @@ void setup()
   Serial.println("Setup started");
 
   unsigned long previousMillis = millis();
-  co2Serial.begin(9600); //Init sensor MH-Z19(14)
+  co2Sensor.start(); //Init sensor MH-Z19(14)
   dht.begin();
 
   if (WiFi.status() == WL_NO_SHIELD)
@@ -177,9 +121,9 @@ void setup()
     attempt++;
     lcd.printLine(2, "Attempt " + String(attempt));
     Serial.print("Attempting to connect to WPA SSID: ");
-    Serial.println(ssid);
+    Serial.println(WIFI_SSID);
     // Connect to WPA/WPA2 network:
-    WiFi.begin(ssid, pass);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
     delay(10000);
   }
 
@@ -222,6 +166,9 @@ void setup()
   wifiUtils.printCurrentNet();
   wifiUtils.printWifiData();
 
+  if (MQTT_ENABLED) {
+    mqttClient.setServer(mqtt_server, mqtt_port);
+  }
   Serial.println("Waiting for sensors to init");
 
   lcd.printLine(1, "Heating...");
@@ -234,17 +181,17 @@ void setup()
   lcd.printLine(1, "Heating...");
   lcd.noBacklight();
 
-  if (MQTT_ENABLED) {
-    mqttClient.setServer(mqtt_server, mqtt_port);
-  }
 }
 
 void loop()
 {
 
   unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis < INTERVAL)
+  if (CHECK_INTERVAL > (currentMillis - previousMillis))
+  {
+    delay(100);
     return;
+  }
   previousMillis = currentMillis;
   Serial.println("loop started");
 
@@ -258,7 +205,7 @@ void loop()
     resetFunc();
   }
   Serial.println("reading data:");
-  int ppm = readCO2();
+  int ppm = co2Sensor.read();
   bool dataError = false;
   Serial.println("  PPM = " + String(ppm));
 
@@ -317,7 +264,14 @@ void loop()
   }
   errorCount = 0;
 
-  wifiUtils.checkReconnect(ssid, pass, WIFI_MAX_ATTEMPTS_SEND);
+  unsigned long currentMillisSend = millis();
+  if (WIFI_SEND_INTERVAL > (currentMillisSend - previousMillisSend)) {
+    Serial.println("Not sending to server - too early");
+    return;
+  }
+  previousMillisSend = currentMillisSend;
+
+  wifiUtils.checkReconnect(WIFI_SSID, WIFI_PASS, WIFI_MAX_ATTEMPTS_SEND);
   if (USE_GOOGLE_DNS)
     wifiUtils.setGoogleDNS();
   wifiUtils.printCurrentNet();
