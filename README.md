@@ -1,6 +1,6 @@
 # Arduino esp8266 mh-z19 serial
 
-![Build Status](https://github.com/jehy/arduino-esp8266-mh-z19-serial/workflows/compile-sketch/badge.svg)
+[![Build Status](https://github.com/jehy/arduino-esp8266-mh-z19-serial/actions/workflows/compile-sketch.yaml/badge.svg)](https://github.com/jehy/arduino-esp8266-mh-z19-serial/actions/workflows/compile-sketch.yaml)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/jehyrus)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
