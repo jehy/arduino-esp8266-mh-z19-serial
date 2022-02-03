@@ -1,10 +1,3 @@
-
-
-extern "C"
-{
-#include <user_interface.h>
-}
-
 #include <DHT.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
@@ -23,7 +16,6 @@ int errorCount = 0;
 WiFiClient client;
 PubSubClient mqttClient(client);
 MHZ19 co2Sensor(MH_Z19_RX, MH_Z19_TX);
-WiFiUtils wifiUtils;
 lcdPrint lcd(0x3F, 16, 2); // display address and size
 DHT dht(DHT_PIN, DHT_VERSION);                  //define temperature and humidity sensor
 
@@ -86,25 +78,10 @@ void setup()
   if (WiFi.status() == WL_NO_SHIELD)
   {
     Serial.println("WiFi shield not present");
-    // don't continue:
-    while (true)
-      delay(1000);
   }
   WiFi.mode(WIFI_STA); //be only wifi client, not station
-
-  Serial.print("Scan start ... ");
-  int n = WiFi.scanNetworks();
-  Serial.print(n);
-  Serial.println(" network(s) found");
-  for (int i = 0; i < n; i++)
-  {
-    Serial.printf("%d: %s, Ch:%d (%ddBm) %s\n", i + 1, WiFi.SSID(i).c_str(), WiFi.channel(i), WiFi.RSSI(i), WiFi.encryptionType(i) == ENC_TYPE_NONE ? "open" : "");
-  }
-  Serial.println();
-  WiFi.disconnect(1);
+  WiFiUtils::printNetworks();
   WiFi.hostname("CO2_Sensor");
-  uint8_t mac[6] {0xb7, 0xa7, 0x53, 0x10, 0xae, 0xec};
-  wifi_set_macaddr(STATION_IF, mac);
 
   lcd.init();
   lcd.backlight();
@@ -128,43 +105,10 @@ void setup()
   }
 
   if (USE_GOOGLE_DNS)
-    wifiUtils.setGoogleDNS();
-  // you're connected now, so print out the data:
-  //Serial.println("Connected to network");
-  Serial.printf("Connection status: %d\n", WiFi.status());
-
-  if (WiFi.status() == WL_IDLE_STATUS)
-  {
-    Serial.println("WL_IDLE_STATUS");
-  }
-  else if (WiFi.status() == WL_NO_SSID_AVAIL)
-  {
-    Serial.println("WL_NO_SSID_AVAIL");
-  }
-  else if (WiFi.status() == WL_SCAN_COMPLETED)
-  {
-    Serial.println("WL_SCAN_COMPLETED");
-  }
-  else if (WiFi.status() == WL_CONNECTED)
-  {
-    Serial.println("WL_CONNECTED");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-  }
-  else if (WiFi.status() == WL_CONNECT_FAILED)
-  {
-    Serial.println("WL_CONNECT_FAILED");
-  }
-  else if (WiFi.status() == WL_CONNECTION_LOST)
-  {
-    Serial.println("WL_CONNECTION_LOST");
-  }
-  else if (WiFi.status() == WL_DISCONNECTED)
-  {
-    Serial.println("WL_DISCONNECTED");
-  }
-  wifiUtils.printCurrentNet();
-  wifiUtils.printWifiData();
+    WiFiUtils::setGoogleDNS();
+  WiFiUtils::printWiFiStatus();
+  WiFiUtils::printCurrentNet();
+  WiFiUtils::printWifiData();
 
   if (MQTT_ENABLED) {
     mqttClient.setServer(mqtt_server, mqtt_port);
@@ -271,10 +215,10 @@ void loop()
   }
   previousMillisSend = currentMillisSend;
 
-  wifiUtils.checkReconnect(WIFI_SSID, WIFI_PASS, WIFI_MAX_ATTEMPTS_SEND);
+  WiFiUtils::checkReconnect(WIFI_SSID, WIFI_PASS, WIFI_MAX_ATTEMPTS_SEND);
   if (USE_GOOGLE_DNS)
-    wifiUtils.setGoogleDNS();
-  wifiUtils.printCurrentNet();
+    WiFiUtils::setGoogleDNS();
+  WiFiUtils::printCurrentNet();
 
   lcd.printParam(4, "WiFi *");
   bool sentOk = false;
@@ -282,11 +226,13 @@ void loop()
   if (SERVER_ENABLED)
   {
     DynamicJsonDocument root(200);
+    char macString[20];
+    WiFiUtils::macStr(macString);
     root["id"] = DATA_SENSOR_ID;
     root["temp"] = t;
     root["humidity"] = h;
     root["ppm"] = ppm;
-    root["mac"] = wifiUtils.macStr();
+    root["mac"] = macString;
     root["FreeRAM"] = mem;
     root["SSID"] = WiFi.SSID();
     sentOk = sendData(root);

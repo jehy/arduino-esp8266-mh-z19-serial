@@ -7,8 +7,15 @@ class MHZ19
     MHZ19(int rx, int tx) {
       co2Serial = new SoftwareSerial(rx, tx);
     }
+    ~MHZ19() {
+      stop();
+      delete co2Serial;
+    }
     void start() {
       co2Serial->begin(9600); //Init sensor MH-Z19(14)
+    }
+    void stop() {
+      co2Serial->end();
     }
     int read()
     {
