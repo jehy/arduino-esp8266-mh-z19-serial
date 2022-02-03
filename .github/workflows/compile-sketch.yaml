@@ -1,0 +1,40 @@
+name: Compile Sketch
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  compile-sketch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Copy sample settings
+        run: |
+          cp settings.sample.h settings.h
+
+      - name: Compile sketch
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: esp8266:esp8266:d1
+          platforms: |
+            # Install ESP8266 platform via Boards Manager
+            - name: esp8266:esp8266
+              source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
+              version: 2.5.0
+          sketch-paths: |
+            - ./
+          libraries: |
+            - name: ArduinoJson
+              version: 6.14.1
+            - name: Adafruit Unified Sensor
+              version: 1.1.2
+            - name: DHT sensor library
+              version: 1.3.8
+            - name: LiquidCrystal I2C
+              version: 1.1.2
+            - name: PubSubClient
+              version: 2.8.0
