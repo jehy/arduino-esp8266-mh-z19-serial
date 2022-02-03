@@ -22,9 +22,7 @@ install:
 - arduino --install-boards esp8266:esp8266
 - arduino --board esp8266:esp8266:generic --save-prefs
 - arduino --pref "compiler.warning_level=all" --save-prefs
-- cp WiFiCreds.sample.h WiFiCreds.h
-- cp dataServer.sample.h dataServer.h
-- cp mqtt.sample.h mqtt.h
+- cp settings.sample.h settings.h
 script:
 - "echo $PWD"
 - "echo $HOME"
