@@ -111,7 +111,7 @@ void setup()
   WiFiUtils::printWifiData();
 
   if (MQTT_ENABLED) {
-    mqttClient.setServer(mqtt_server, mqtt_port);
+    mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
   }
   Serial.println("Waiting for sensors to init");
 
@@ -256,13 +256,13 @@ void loop()
     if (connected) {
       char dataString[5];       // number of digits + 1 for null terminator
       itoa(t, dataString, 10);  // int value, pointer to string, base number
-      mqttClient.publish(temperature_topic, dataString, true);
+      mqttClient.publish(TEMPERATURE_TOPIC, dataString, true);
       itoa(h, dataString, 10);  // int value, pointer to string, base number
-      mqttClient.publish(humidity_topic, dataString, true);
+      mqttClient.publish(HUMIDITY_TOPIC, dataString, true);
       itoa(ppm, dataString, 10);  // int value, pointer to string, base number
-      mqttClient.publish(co2_topic, dataString, true);
+      mqttClient.publish(CO2_TOPIC, dataString, true);
       itoa(mem, dataString, 10);  // int value, pointer to string, base number
-      mqttClient.publish(ram_topic, dataString, true);
+      mqttClient.publish(RAM_TOPIC, dataString, true);
       Serial.println("MQQT request sent");
       sentOk = true;
     }

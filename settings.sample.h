@@ -15,15 +15,15 @@
 
 // MQQT settings
 #define MQTT_ENABLED true
-#define mqtt_server "192.168.0.5"
-#define mqtt_port 1883
-#define mqtt_user ""
-#define mqtt_password ""
+#define MQTT_SERVER "192.168.0.5"
+#define MQTT_PORT 1883
+#define MQTT_USER ""
+#define MQTT_PASSWORD ""
 
-#define humidity_topic "sensor/humidity"
-#define temperature_topic "sensor/temperature"
-#define co2_topic "sensor/co2"
-#define ram_topic "sensor/ram"
+#define HUMIDITY_TOPIC "sensor/humidity"
+#define TEMPERATURE_TOPIC "sensor/temperature"
+#define CO2_TOPIC "sensor/co2"
+#define RAM_TOPIC "sensor/ram"
 
 // WIFI settings
 #define WIFI_SSID  "Me"             //  your network SSID (name)
