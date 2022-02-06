@@ -34,7 +34,7 @@ arduino --verify --board esp8266:esp8266:d1:CpuFrequency=80,FlashSize=4M3M ardui
 
 ```
 
-## Manualy:
+## Manually:
 
 1. Copy file `settings.sample.h` to `settings.h` and specify your settings;
 2. Install [Adafruit Unified Sensor](https://github.com/adafruit/Adafruit_Sensor) version 1.1.2;
@@ -48,3 +48,31 @@ For Wemos D1, before compiling sketch:
 
 1. Add `http://arduino.esp8266.com/stable/package_esp8266com_index.json` to additional boards in preferences;
 2. Select wemos D1 (or your other board) in boards manager and install it.
+
+## MQTT with Home Assistant
+
+You can use config which looks like this:
+
+```yaml
+sensor:
+  - platform: mqtt
+    unique_id: esp-terrace-co2
+    name: "ESP terrace CO2"
+    state_topic: "esp/terrace/co2"
+    qos: 0
+    unit_of_measurement: "ppm"
+
+  - platform: mqtt
+    unique_id: esp-terrace-humidity
+    name: "ESP terrace Humidity"
+    state_topic: "esp/terrace/humidity"
+    qos: 0
+    unit_of_measurement: "%"
+
+  - platform: mqtt
+    unique_id: esp-terrace-temperature
+    name: "ESP terrace Temperature"
+    state_topic: "esp/terrace/temperature"
+    qos: 0
+    unit_of_measurement: "ºC"
+```
